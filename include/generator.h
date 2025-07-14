@@ -3,7 +3,7 @@
 
 #include "sudoku.h"
 
-void generate_puzzle(int grid[9][9], int solution[9][9], int given[9][9], difficulty_t difficulty);
+int generate_puzzle(int grid[9][9], int solution[9][9], int given[9][9], difficulty_t difficulty);
 int get_cells_to_remove(difficulty_t difficulty);
 int is_valid_placement(int grid[9][9], int row, int col, int num);
 int solve_grid(int grid[9][9]);

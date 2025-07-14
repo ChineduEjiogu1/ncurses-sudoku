@@ -25,4 +25,4 @@ void clear_status_line(void);
 void draw_completion_message(game_state_t *game);
 void format_time(int seconds, char *buffer, size_t buffer_size);
 
-#endif /* DISPLAY_H */
+#endif

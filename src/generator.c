@@ -1,8 +1,9 @@
-#include "sudoku.h"
-#include "generator.h"
+#include "../include/sudoku.h"
+#include "../include/generator.h"
+#include "../include/solver.h"
 #include <time.h>
 
-void swap(int *a, int *b) 
+void swap(int *a, int *b)
 {
     int temp = *a;
     *a = *b;
@@ -17,95 +18,13 @@ void shuffle_array(int *array, int num)
     {
         int j = rand() % (i + 1);
 
-        swap(&array[i], array[j]);
+        swap(&array[i], &array[j]);
     }
 }
-
-int find_empty_cell(int grid[9][9], int *row, int *col)
-{
-    for (int x = 0; x < 9; x++)
-    {
-        for (int y = 0; y < 9; y++)
-        {
-            if (grid[x][y] == 0)
-            {
-                *row = x;
-                *col = y;
-                return 1;
-            }
-        }
-    }
-
-    return 0;
-}
-
-int solve_grid(int grid[9][9])
-{
-    int numbers[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-
-    int row, col;
-
-    if (!find_empty_cell(grid, &row, &col)) 
-    {
-        return 1;
-    }
-
-    shuffle_array(numbers, 9);
-
-    for (int i = 0; i < 9; i++)
-    {
-        int guess = numbers[i];
-        
-        if (is_valid_placement(grid, row, col, guess)) 
-        {
-            grid[row][col] = guess;
-            if(solve_grid(grid)) return 1;
-            grid[row][col] = 0;
-        }
-    }
-
-    return 0;
-}
-
-int is_valid_placement(int grid[9][9], int row, int col, int num)
-{
-    for (int x = 0; x < 9; x++)
-    {
-        if (grid[x][col] == num)
-        {
-            return false;
-        }
-    }
-
-    for (int y = 0; y < 9; y++)
-    {
-        if (grid[row][y] == num)
-        {
-            return false;
-        }
-    }
-
-    int start_row = (row / 3) * 3;
-    int start_col = (col / 3) * 3;
-
-    for (int x = start_row; x < start_row + 3; x++)
-    {
-        for (int y = start_col; y < start_col + 3; y++)
-        {
-            if (grid[x][y] == num)
-            {
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
-
 
 int get_cells_to_remove(difficulty_t difficulty)
 {
-    switch(difficulty) 
+    switch (difficulty)
     {
         case EASY:
             return 45;
@@ -122,52 +41,89 @@ int get_cells_to_remove(difficulty_t difficulty)
 
 int generate_puzzle(int grid[9][9], int solution[9][9], int given[9][9], difficulty_t difficulty)
 {
+    // Initialize counters for cell removal process
+    int removed_count = 0;
+    int cells_to_remove = get_cells_to_remove(difficulty);
+
+    // Set up attempt limiting to prevent infinite loops
+    int attempts = 0;
+    int max_attempts = cells_to_remove * 10;
+
+    // Step 1: Clear the grid to start with empty puzzle
     for (int row = 0; row < 9; row++)
     {
-        for(int col = 0; col < 9; col++)
+        for (int col = 0; col < 9; col++)
         {
             grid[row][col] = 0;
         }
     }
-    
+
+    // Step 2: Generate a complete, valid Sudoku solution
     solve_grid(grid);
 
+    // Step 3: Store the complete solution in solution array
+    // This preserves the full solution for reference (e.g., when player requests hint)
     for (int row = 0; row < 9; row++)
     {
-        for(int col = 0; col < 9; col++)
+        for (int col = 0; col < 9; col++)
         {
             solution[row][col] = grid[row][col];
         }
     }
-    
-    int cells_to_remove = get_cells_to_remove(difficulty);
 
-    for (int i = 0; i < cells_to_remove; i++) 
+    // Step 4: Intelligently remove cells while maintaining puzzle uniqueness
+    while (removed_count < cells_to_remove && attempts < max_attempts)
     {
-        int row, col;
+        // Pick a random cell to potentially remove
+        int row = rand() % 9;
+        int col = rand() % 9;
 
-        do {
-            row = rand() % 9;
-            col = rand() % 9;
-        } while (grid[row][col] == 0);  
-        
-        grid[row][col] = 0; 
+        // Skip cells that have already been removed (are zero)
+        if (grid[row][col] == 0)
+        {
+            attempts++;
+            continue;
+        }
+
+        // Store the original value before removal attempt
+        int original_value = grid[row][col];
+
+        // Temporarily remove the cell (set to zero)
+        grid[row][col] = 0;
+
+        // Test if puzzle still has a unique solution after removal
+        if (has_unique_solution(grid))
+        {
+            // Removal successful - puzzle still has unique solution
+            removed_count++;
+        }
+        else
+        {
+            // Removal failed - would create multiple solutions or no solution
+            // Restore the original value
+            grid[row][col] = original_value;
+        }
+
+        // Increment attempt counter regardless of success/failure
+        attempts++;
     }
 
-    for (int row = 0; row < 9; row++) 
+    // Step 5: Create the given array to track which cells are clues
+    // This helps distinguish between original clues and player-filled cells
+    for (int row = 0; row < GRID_SIZE; row++)
     {
-        for (int col = 0; col < 9; col++) 
+        for (int col = 0; col < GRID_SIZE; col++)
         {
-            if (grid[row][col] != 0) 
+            if (grid[row][col] != 0)
             {
-                given[row][col] = 1;  
+                given[row][col] = 1; // This cell is a given clue
             }
-            else 
+            else
             {
-                given[row][col] = 0;
+                given[row][col] = 0; // This cell is empty for player to fill
             }
         }
     }
 
-    return 1;
+    return 1; // Success
 }
