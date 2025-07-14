@@ -1,11 +1,6 @@
 #include "../include/sudoku.h"
 #include "../include/generator.h"
 #include "../include/solver.h"
-#include "generator.c"
-#include "solver.c"
-#include <stdio.h>
-
-
 #include <stdio.h>
 
 #define SIZE 9

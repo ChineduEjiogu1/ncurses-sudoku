@@ -1,7 +1,7 @@
 #ifndef SUDOKU_H
 #define SUDOKU_H
 
-#include <ncurses/ncurses.h>
+#include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
