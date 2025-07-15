@@ -1,7 +1,7 @@
 #ifndef SUDOKU_H
 #define SUDOKU_H
 
-#include <ncurses.h>
+#include <ncurses/ncurses.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -37,4 +37,4 @@ typedef struct
     int is_completed;  // Game finished
 } game_state_t;
 
-#endif /* SUDOKU_H */
+#endif

@@ -1,7 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "sudoku.h"
+#include "../include/sudoku.h"
 
 void init_game(game_state_t *game, difficulty_t difficulty);
 void check_solution(game_state_t *game);
@@ -21,4 +21,4 @@ void pause_timer(game_state_t *game);
 void resume_timer(game_state_t *game);
 int get_elapsed_time(game_state_t *game);
 
-#endif /* GAME_H */
+#endif
