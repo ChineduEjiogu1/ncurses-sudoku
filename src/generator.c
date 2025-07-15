@@ -12,14 +12,40 @@ void swap(int *a, int *b)
 
 void shuffle_array(int *array, int num)
 {
-    srand(time(NULL));
-
     for (int i = num - 1; i > 0; i--)
     {
         int j = rand() % (i + 1);
 
         swap(&array[i], &array[j]);
     }
+}
+
+int generate_complete_grid(int grid[9][9])
+{
+    int row = 0, col = 0;
+
+    int numbers[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    shuffle_array(numbers, 9);
+
+    if (!find_empty_cell(grid, &row, &col))
+    {
+        return 1;
+    }
+
+    for (int i = 0; i < GRID_SIZE; i++) 
+    {
+        int guess = numbers[i];
+
+        if (is_valid_placement(grid, row, col, guess))
+        {
+            grid[row][col] = guess;
+            if (generate_complete_grid(grid))
+                return 1;
+            grid[row][col] = 0;
+        }
+    }
+
+    return 0;
 }
 
 int get_cells_to_remove(difficulty_t difficulty)
@@ -41,6 +67,8 @@ int get_cells_to_remove(difficulty_t difficulty)
 
 int generate_puzzle(int grid[9][9], int solution[9][9], int given[9][9], difficulty_t difficulty)
 {
+    srand(time(NULL));
+
     // Initialize counters for cell removal process
     int removed_count = 0;
     int cells_to_remove = get_cells_to_remove(difficulty);
@@ -59,7 +87,7 @@ int generate_puzzle(int grid[9][9], int solution[9][9], int given[9][9], difficu
     }
 
     // Step 2: Generate a complete, valid Sudoku solution
-    solve_grid(grid);
+    generate_complete_grid(grid);
 
     // Step 3: Store the complete solution in solution array
     // This preserves the full solution for reference (e.g., when player requests hint)
@@ -94,13 +122,12 @@ int generate_puzzle(int grid[9][9], int solution[9][9], int given[9][9], difficu
         // Test if puzzle still has a unique solution after removal
         if (has_unique_solution(grid))
         {
-            // Removal successful - puzzle still has unique solution
+            // Keep it removed
             removed_count++;
         }
         else
         {
-            // Removal failed - would create multiple solutions or no solution
-            // Restore the original value
+            // Put it back
             grid[row][col] = original_value;
         }
 

@@ -116,16 +116,22 @@ int is_valid_placement(int grid[9][9], int row, int col, int num)
 
 int has_unique_solution(int grid[9][9])
 {
-    int counter = 0;
+    int grid_copy[9][9];
 
-    count_solutions_helper(grid, &counter);
-
-    if (counter == 1)
+    for (int i = 0; i < 9; i++) 
     {
-        return 1;
+        for (int j = 0; j < 9; j++) 
+        {
+            grid_copy[i][j] = grid[i][j];
+        }
     }
-    else
-    {
+    
+    int counter = 0;
+    count_solutions_helper(grid_copy, &counter);
+    
+    if (counter == 1) {
+        return 1;
+    } else {
         return 0;
     }
 }
