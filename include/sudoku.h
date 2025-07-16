@@ -31,10 +31,11 @@ typedef struct
     int cursor_row, cursor_col;
     difficulty_t difficulty;
     int moves;
-    time_t start_time; // When game started
-    time_t pause_time; // For pause functionality
-    int is_paused;     // Pause state
-    int is_completed;  // Game finished
+    time_t start_time;
+    time_t pause_time;
+    time_t completion_time;  // Add this line
+    int is_paused;
+    int is_completed;
 } game_state_t;
 
 #endif

@@ -1,94 +1,118 @@
+#include <stdio.h>
+#include <unistd.h>
+#include "../include/sudoku.h"
+#include "../include/generator.h"
+#include "../include/solver.h"
+#include "../include/game.h"
+#include "../include/input.h" // optional, if testing input
+
+#define SIZE 9
+
+void print_grid(int grid[SIZE][SIZE])
+{
+    printf("-------------------------\n");
+    for (int row = 0; row < SIZE; row++)
+    {
+        for (int col = 0; col < SIZE; col++)
+        {
+            if (col % 3 == 0)
+                printf("| ");
+            if (grid[row][col] == 0)
+                printf(". ");
+            else
+                printf("%d ", grid[row][col]);
+        }
+        printf("|\n");
+        if ((row + 1) % 3 == 0)
+            printf("-------------------------\n");
+    }
+}
+
+int main()
+{
+    game_state_t game;
+
+    printf("=== Sudoku Game Module Test ===\n");
+
+    // Step 1: Init game
+    init_game(&game, MEDIUM);
+    printf("\nGenerated Puzzle:\n");
+    print_grid(game.grid);
+
+    printf("\nSolution:\n");
+    print_grid(game.solution);
+
+    // Step 2: Test deletion at editable cell
+    int editable = 0;
+    for (int r = 0; r < GRID_SIZE && !editable; r++)
+    {
+        for (int c = 0; c < GRID_SIZE && !editable; c++)
+        {
+            if (!game.given[r][c])
+            {
+                game.cursor_row = r;
+                game.cursor_col = c;
+                enter_number(&game, 5); // Try placing 5
+                printf("\nPlaced 5 at (%d, %d)\n", r, c);
+                delete_number(&game);
+                printf("Deleted number at (%d, %d)\n", r, c);
+                editable = 1;
+            }
+        }
+    }
+
+    // Step 3: Solve and check
+    printf("\nSolving Puzzle...\n");
+    solve_puzzle(&game);
+    print_grid(game.grid);
+
+    printf("Checking solution...\n");
+    if (is_game_complete(&game))
+    {
+        printf("✅ Puzzle marked as complete.\n");
+    }
+    else
+    {
+        printf("❌ Puzzle is not complete.\n");
+    }
+
+    // Step 4: Reset game
+    printf("\nResetting puzzle to original state...\n");
+    reset_game(&game);
+    print_grid(game.grid);
+
+    return 0;
+}
+
+// #include <ncurses/ncurses.h>
 // #include "../include/sudoku.h"
 // #include "../include/generator.h"
 // #include "../include/solver.h"
-// #include <stdio.h>
+// #include "../include/game.h"
+// #include "../include/input.h"
+// #include "../include/display.h" // <- you need redraw_screen here
 
-// #define SIZE 9
-// #define GRID_SIZE 9  // Needed for puzzle, solution, given arrays
+// int main() {
+//     game_state_t game;
 
-// void print_grid(int grid[SIZE][SIZE])
-// {
-//     printf("-------------------------\n");
-//     for (int row = 0; row < SIZE; row++)
-//     {
-//         for (int col = 0; col < SIZE; col++)
-//         {
-//             if (col % 3 == 0)
-//                 printf("| ");
-//             if (grid[row][col] == 0)
-//                 printf(". ");
-//             else
-//                 printf("%d ", grid[row][col]);
-//         }
-//         printf("|\n");
-//         if ((row + 1) % 3 == 0)
-//         {
-//             printf("-------------------------\n");
-//         }
-//     }
-// }
+//     // Initialize ncurses
+//     initscr();
+//     raw();
+//     noecho();
+//     keypad(stdscr, TRUE);
+//     curs_set(0); // hide blinking cursor
 
-// int main()
-// {
-//     printf("=== Testing Sudoku Functions ===\n");
+//     // Setup game
+//     init_game(&game, MEDIUM);
+//     redraw_screen(&game);
 
-//     // Test 1: Sample partially filled grid
-//     int test_grid[9][9] = {
-//         {5, 3, 0, 0, 7, 0, 0, 0, 0},
-//         {6, 0, 0, 1, 9, 5, 0, 0, 0},
-//         {0, 9, 8, 0, 0, 0, 0, 6, 0},
-//         {8, 0, 0, 0, 6, 0, 0, 0, 3},
-//         {4, 0, 0, 8, 0, 3, 0, 0, 1},
-//         {7, 0, 0, 0, 2, 0, 0, 0, 6},
-//         {0, 6, 0, 0, 0, 0, 2, 8, 0},
-//         {0, 0, 0, 4, 1, 9, 0, 0, 5},
-//         {0, 0, 0, 0, 8, 0, 0, 7, 9}
-//     };
-
-//     printf("\nOriginal Grid:\n");
-//     print_grid(test_grid);
-
-//     // Test 2: Try is_valid_placement
-//     int test_row = 0;
-//     int test_col = 2;
-//     int test_num = 2;
-
-//     printf("\nTest is_valid_placement(%d at [%d][%d]):\n", test_num, test_row, test_col);
-//     if (is_valid_placement(test_grid, test_row, test_col, test_num))
-//         printf("✅ It is valid to place %d at (%d, %d)\n", test_num, test_row, test_col);
-//     else
-//         printf("❌ It is NOT valid to place %d at (%d, %d)\n", test_num, test_row, test_col);
-
-//     // Test 3: Try solve_grid
-//     printf("\nSolving the puzzle...\n");
-//     if (solve_grid(test_grid))
-//     {
-//         printf("✅ Solved Puzzle:\n");
-//         print_grid(test_grid);
-//     }
-//     else
-//     {
-//         printf("❌ No solution found.\n");
+//     // Interactive loop
+//     while (handle_input(&game)) {
+//         redraw_screen(&game);
 //     }
 
-//     // Test 4: Try generate_puzzle
-//     int puzzle[GRID_SIZE][GRID_SIZE];
-//     int solution[GRID_SIZE][GRID_SIZE];
-//     int given[GRID_SIZE][GRID_SIZE];
-
-//     printf("\nGenerating new puzzle (Medium difficulty)...\n");
-//     if (generate_puzzle(puzzle, solution, given, MEDIUM))
-//     {
-//         printf("✅ Generated Puzzle:\n");
-//         print_grid(puzzle);
-
-//         printf("\nPuzzle Solution:\n");
-//         print_grid(solution);
-//     }
-//     else
-//     {
-//         printf("❌ Failed to generate puzzle.\n");
-//     }
-
+//     // Clean up ncurses
+//     endwin();
 //     return 0;
 // }
+

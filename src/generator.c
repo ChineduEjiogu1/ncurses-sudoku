@@ -149,9 +149,9 @@ int generate_puzzle(int grid[9][9], int solution[9][9], int given[9][9], difficu
 
     // Step 3: Store the complete solution in solution array
     // This preserves the full solution for reference (e.g., when player requests hint)
-    for (int row = 0; row < 9; row++)
+    for (int row = 0; row < GRID_SIZE; row++)
     {
-        for (int col = 0; col < 9; col++)
+        for (int col = 0; col < GRID_SIZE; col++)
         {
             solution[row][col] = grid[row][col];
         }
