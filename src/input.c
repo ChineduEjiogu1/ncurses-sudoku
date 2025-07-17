@@ -3,8 +3,7 @@
 #include "../include/input.h"
 #include "../include/game.h"
 #include "../include/solver.h"
-#include <ncurses/ncurses.h>
-
+#include <ncurses/curses.h>  // Use the curses.h from ncurses directory  // Use the curses.h from ncursesw directory  // Not ncurses.h
 
 /**
  * Move cursor up one row
@@ -130,18 +129,45 @@ int handle_input(game_state_t *game)
  * Validates both editability and Sudoku rules
  * Returns: 1 if number placed successfully, 0 if invalid
  */
+
+// int process_number_input(game_state_t *game, int num)
+// {
+//     // Check if cell can be edited AND number follows Sudoku rules
+//     if (can_enter_number(game, game->cursor_row, game->cursor_col) && 
+//         is_valid_placement(game->grid, game->cursor_row, game->cursor_col, num))
+//     {
+//         game->grid[game->cursor_row][game->cursor_col] = num; // Place number
+//         return 1; // Success
+//     }
+//     else
+//     {
+//         return 0; // Invalid move
+//     }
+// }
+
 int process_number_input(game_state_t *game, int num)
 {
-    // Check if cell can be edited AND number follows Sudoku rules
-    if (can_enter_number(game, game->cursor_row, game->cursor_col) && 
-        is_valid_placement(game->grid, game->cursor_row, game->cursor_col, num))
+    // Check if cell can be edited
+    if (can_enter_number(game, game->cursor_row, game->cursor_col))
     {
-        game->grid[game->cursor_row][game->cursor_col] = num; // Place number
+        // Always place the number (even if invalid)
+        game->grid[game->cursor_row][game->cursor_col] = num;
+        
+        // Optionally show a status message for invalid moves
+        if (!is_valid_placement(game->grid, game->cursor_row, game->cursor_col, num))
+        {
+            draw_status_message("Invalid move - conflicts highlighted in red!");
+        }
+        else
+        {
+            clear_status_line(); // Clear any previous error messages
+        }
+        
         return 1; // Success
     }
     else
     {
-        return 0; // Invalid move
+        return 0; // Can't edit given cells
     }
 }
 

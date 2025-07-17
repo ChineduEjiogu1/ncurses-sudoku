@@ -1,5 +1,6 @@
 #include "../include/sudoku.h"
 #include "../include/generator.h"
+#include <ncursesw/ncurses.h>
 
 /**
  * Find the first empty cell (value 0) in the grid
