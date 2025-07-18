@@ -16,7 +16,7 @@
 #ifndef GENERATOR_H
 #define GENERATOR_H
 
-#include "sudoku.h"
+#include "../include/sudoku.h"
 
 // ============================================================================
 //                          MAIN GENERATION FUNCTIONS

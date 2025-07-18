@@ -137,25 +137,25 @@ int solve_grid(int grid[9][9])
  */
 int is_valid_placement(int grid[9][9], int row, int col, int num)
 {
-    // Check column constraint: no duplicate in same column
+    // Check column constraint: no duplicate in same column (excluding current cell)
     for (int x = 0; x < GRID_SIZE; x++)
     {
-        if (grid[x][col] == num)
+        if (x != row && grid[x][col] == num)  // Added: x != row
         {
             return 0; // Found duplicate in column
         }
     }
 
-    // Check row constraint: no duplicate in same row
+    // Check row constraint: no duplicate in same row (excluding current cell)
     for (int y = 0; y < GRID_SIZE; y++)
     {
-        if (grid[row][y] == num)
+        if (y != col && grid[row][y] == num)  // Added: y != col
         {
             return 0; // Found duplicate in row
         }
     }
 
-    // Check 3x3 box constraint: no duplicate in same box
+    // Check 3x3 box constraint: no duplicate in same box (excluding current cell)
     int start_row = (row / 3) * 3; // Top-left corner of box
     int start_col = (col / 3) * 3; // Top-left corner of box
 
@@ -163,7 +163,7 @@ int is_valid_placement(int grid[9][9], int row, int col, int num)
     {
         for (int y = start_col; y < start_col + BOX_SIZE; y++)
         {
-            if (grid[x][y] == num)
+            if ((x != row || y != col) && grid[x][y] == num)  // Added: (x != row || y != col)
             {
                 return 0; // Found duplicate in 3x3 box
             }

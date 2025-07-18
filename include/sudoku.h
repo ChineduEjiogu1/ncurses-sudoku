@@ -20,7 +20,7 @@
 // ============================================================================
 // Essential libraries used across multiple game modules
 
-#include <ncurses/ncurses.h>    // Terminal UI library for display and input
+  // Terminal UI library for display and input
 #include <stdlib.h>             // Standard library (malloc, rand, etc.)
 #include <string.h>             // String manipulation functions
 #include <time.h>               // Time functions for game timer

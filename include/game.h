@@ -175,6 +175,14 @@ void resume_timer(game_state_t *game);
  */
 int get_elapsed_time(game_state_t *game);
 
+// Add these to your game.h header file
+
+// Hint system functions
+int get_hint(game_state_t *game, int *hint_row, int *hint_col, int *hint_value);
+int find_naked_single(game_state_t *game, int *hint_row, int *hint_col, int *hint_value);
+int find_hidden_single(game_state_t *game, int *hint_row, int *hint_col, int *hint_value);
+void show_hint_message(game_state_t *game, int row, int col);
+
 #endif
 
 /**

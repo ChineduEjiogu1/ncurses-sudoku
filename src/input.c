@@ -3,7 +3,7 @@
 #include "../include/input.h"
 #include "../include/game.h"
 #include "../include/solver.h"
-#include <ncurses/curses.h>  // Use the curses.h from ncurses directory  // Use the curses.h from ncursesw directory  // Not ncurses.h
+#include <ncurses.h>  // Use the curses.h from ncurses directory  // Use the curses.h from ncursesw directory  // Not ncurses.h
 
 /**
  * Move cursor up one row

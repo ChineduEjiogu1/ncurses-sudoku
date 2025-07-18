@@ -18,7 +18,7 @@
 #include "../include/generator.h"
 #include "../include/solver.h"
 #include "../include/display.h"
-#include <ncurses/curses.h>
+#include <ncurses.h>
 
 // Color pair constants for consistent color management
 #define COLOR_NORMAL 1      // White text for user-entered numbers
@@ -123,19 +123,18 @@ void draw_help_panel(void)
 {
     attron(COLOR_PAIR(9)); // Light blue (cyan) for help panel
 
-    // Movement instructions
     mvprintw(9, 50, "Movement");
     mvprintw(10, 52, "Arrow keys - Move cursor");
 
-    // Game commands
     mvprintw(12, 50, "Commands");
     mvprintw(13, 52, "1-9 - Enter number");
     mvprintw(14, 52, "x - Delete number");
     mvprintw(15, 52, "m - Toggle marks");
-    mvprintw(16, 52, "n - New puzzle");
-    mvprintw(17, 52, "s - Solve puzzle");
-    mvprintw(18, 52, "r - Redraw");
-    mvprintw(19, 52, "q - Quit");
+    mvprintw(16, 52, "h - Get hint");        // NEW: Hint command
+    mvprintw(17, 52, "n - New puzzle");
+    mvprintw(18, 52, "s - Solve puzzle");
+    mvprintw(19, 52, "r - Redraw");
+    mvprintw(20, 52, "q - Quit");
 
     attroff(COLOR_PAIR(9));
 }
@@ -276,39 +275,59 @@ void draw_grid(game_state_t *game)
  */
 int should_highlight_cell(game_state_t *game, int check_row, int check_col)
 {
-    // Scan entire grid for invalid placements
-    for (int row = 0; row < GRID_SIZE; row++)
+    // Get the value at current cursor position
+    int cursor_row = game->cursor_row;
+    int cursor_col = game->cursor_col;
+    int cursor_value = game->grid[cursor_row][cursor_col];
+    
+    // Only highlight if cursor cell has a value and it's invalid
+    if (cursor_value != 0 && !is_valid_cell_placement(game, cursor_row, cursor_col, cursor_value))
     {
-        for (int col = 0; col < GRID_SIZE; col++)
-        {
-            int value = game->grid[row][col];
-            // If this cell has an invalid placement
-            if (value != 0 && !is_valid_cell_placement(game, row, col, value))
-            {
-                // Highlight its entire row, column, and 3x3 box
-
-                // Same row as invalid cell
-                if (check_row == row)
+        // Check for row conflict
+        for (int col = 0; col < GRID_SIZE; col++) {
+            if (col != cursor_col && game->grid[cursor_row][col] == cursor_value) {
+                // Row conflict found - highlight the entire row
+                if (check_row == cursor_row)
                     return 1;
-
-                // Same column as invalid cell
-                if (check_col == col)
-                    return 1;
-
-                // Same 3x3 box as invalid cell
-                int invalid_box_start_row = (row / 3) * 3;      // Top-left of invalid cell's box
-                int invalid_box_start_col = (col / 3) * 3;
-                int check_box_start_row = (check_row / 3) * 3;  // Top-left of check cell's box
-                int check_box_start_col = (check_col / 3) * 3;
-
-                // If both cells are in the same 3x3 box
-                if (invalid_box_start_row == check_box_start_row &&
-                    invalid_box_start_col == check_box_start_col)
-                    return 1;
+                break;
             }
         }
+        
+        // Check for column conflict  
+        for (int row = 0; row < GRID_SIZE; row++) {
+            if (row != cursor_row && game->grid[row][cursor_col] == cursor_value) {
+                // Column conflict found - highlight the entire column
+                if (check_col == cursor_col)
+                    return 1;
+                break;
+            }
+        }
+        
+        // Check for 3x3 box conflict
+        int box_start_row = (cursor_row / 3) * 3;
+        int box_start_col = (cursor_col / 3) * 3;
+        
+        int box_conflict = 0;
+        for (int r = box_start_row; r < box_start_row + 3 && !box_conflict; r++) {
+            for (int c = box_start_col; c < box_start_col + 3; c++) {
+                if ((r != cursor_row || c != cursor_col) && game->grid[r][c] == cursor_value) {
+                    box_conflict = 1;
+                    break;
+                }
+            }
+        }
+        
+        if (box_conflict) {
+            // Box conflict found - highlight the 3x3 box
+            int check_box_row = (check_row / 3) * 3;
+            int check_box_col = (check_col / 3) * 3;
+            
+            if (box_start_row == check_box_row && box_start_col == check_box_col)
+                return 1;
+        }
     }
-    return 0; // No conflicts affect this cell
+    
+    return 0;
 }
 
 /**
@@ -367,7 +386,6 @@ int is_valid_cell_placement(game_state_t *game, int row, int col, int value)
  */
 void draw_cell(int row, int col, int value, int is_given, int is_cursor, game_state_t *game)
 {
-    // Calculate screen position for this cell
     int y = GRID_START_Y + row * (CELL_HEIGHT + 1) + 1;
     int x = GRID_START_X + col * (CELL_WIDTH + 1) + 1;
 
@@ -379,12 +397,12 @@ void draw_cell(int row, int col, int value, int is_given, int is_cursor, game_st
     }
     else if (value != 0 && !is_valid_cell_placement(game, row, col, value))
     {
-        // Invalid cell gets red background
+        // Only highlight the actual invalid cell itself in red
         attron(COLOR_PAIR(COLOR_INVALID));
     }
     else if (should_highlight_cell(game, row, col))
     {
-        // Cells related to invalid placements get red background
+        // Highlight cells in same row/column/box as cursor (if cursor is invalid)
         attron(COLOR_PAIR(COLOR_INVALID));
     }
     else if (is_given)
@@ -405,7 +423,7 @@ void draw_cell(int row, int col, int value, int is_given, int is_cursor, game_st
     }
     else
     {
-        mvprintw(y, x, "   ");          // Display empty cell
+        mvprintw(y, x, "   ");          // Display empty cell (fills background)
     }
 
     // Turn off all color attributes to reset for next cell
@@ -521,7 +539,7 @@ void format_time(int seconds, char *buffer, size_t buffer_size)
 void draw_status_message(const char *message)
 {
     attron(COLOR_PAIR(8));  // Green color for status messages
-    mvprintw(22, 2, "%-40s", message); // Clear line and print message
+    mvprintw(26, 2, "%-60s", message); // Row 26 should be well clear of the grid
     attroff(COLOR_PAIR(8));
     refresh();
 }
